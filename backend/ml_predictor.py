@@ -235,5 +235,41 @@ class DetentionMLPredictor:
                 1,
             ),
             "estimated_service_duration_min": service_duration,
+            "gamma_sla_analytics": self.compute_gamma_analytics(facility_id, sla_limit_min=120.0),
             "hourly_detention_forecast": hourly_curve,
         }
+
+    def compute_gamma_analytics(self, facility_id: str, sla_limit_min: float = 120.0) -> Dict[str, Any]:
+        """
+        Fits a Gamma(alpha, theta) distribution via Method of Moments to positive detention observations
+        for the given facility and computes P90, P95, and P(T > sla_limit_min) using scipy.stats.gamma.
+        """
+        from scipy.stats import gamma as sp_gamma
+
+        fac_ev = self.store.events[self.store.events["facility_id"] == facility_id]
+        pos_det = fac_ev["detention_minutes"].dropna()
+        pos_det = pos_det[pos_det > 0]
+        if len(pos_det) < 5:
+            pos_det = pd.Series([30.0, 60.0, 90.0, 120.0, 150.0])
+
+        mean_val = float(pos_det.mean())
+        var_val = float(pos_det.var(ddof=1)) if len(pos_det) > 1 else (mean_val * 0.5) ** 2
+        var_val = max(1.0, var_val)
+
+        alpha_hat = (mean_val ** 2) / var_val
+        theta_hat = var_val / mean_val
+        prob_exceed_sla = float(1.0 - sp_gamma.cdf(sla_limit_min, a=alpha_hat, scale=theta_hat))
+        p90_gamma = float(sp_gamma.ppf(0.90, a=alpha_hat, scale=theta_hat))
+        p95_gamma = float(sp_gamma.ppf(0.95, a=alpha_hat, scale=theta_hat))
+
+        return {
+            "alpha_hat": round(alpha_hat, 2),
+            "theta_hat": round(theta_hat, 2),
+            "mean_min": round(mean_val, 1),
+            "std_min": round(float(np.sqrt(var_val)), 1),
+            "p90_min": round(p90_gamma, 1),
+            "p95_min": round(p95_gamma, 1),
+            "sla_limit_min": sla_limit_min,
+            "prob_exceed_sla_pct": round(prob_exceed_sla * 100.0, 1),
+        }
+
