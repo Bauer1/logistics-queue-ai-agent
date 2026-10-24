@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Агент Управления Очередями и Доками | Logistics Control Tower</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- Top Header -->
+  <header class="top-header">
+    <div class="brand-group">
+      <div class="brand-icon">🚛</div>
+      <div class="brand-title">
+        <h1>Logistics Queue &amp; Dock AI-Agent</h1>
+        <p>Интеллектуальное регулирование очередей, Time-Slot менеджмент доков и ML-прогноз простоев</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="telemetry-pill" id="network-telemetry-pill">
+        <span class="status-dot"></span>
+        <span>Загрузка датасета...</span>
+      </div>
+      <div class="telemetry-pill" id="agent-mode-pill">
+        🤖 Режим: Автономное ML-ядро
+      </div>
+      <a href="/api/guide.pdf" target="_blank" class="btn btn-secondary" style="text-decoration:none;">📄 PDF-Инструкция</a>
+      <button class="btn btn-secondary" onclick="openConfigModal()">⚙️ Настройки LLM / API</button>
+    </div>
+  </header>
+
+  <!-- Main Grid -->
+  <main class="workspace-grid">
+    <!-- Left / Center Main Dashboard -->
+    <div class="main-column">
+      <!-- Control Bar -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">🎛️ Панель управления терминалом и симуляции очередей</div>
+          <div style="display:flex; align-items:center; gap:14px; font-size:0.8rem; color:#94a3b8;">
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chk-city-reroute" checked onchange="runOptimization()" />
+              Межскладская балансировка внутри города (Cross-Dock Overflow)
+            </label>
+          </div>
+        </div>
+
+        <div class="controls-grid">
+          <div class="form-group">
+            <label>Логистический терминал / склад (из facilities.csv)</label>
+            <select id="facility-select" onchange="runOptimization()"></select>
+          </div>
+
+          <div class="form-group">
+            <label>Стресс-тест (Симуляция пикового наплыва)</label>
+            <select id="surge-select" onchange="runOptimization()">
+              <option value="0">Штатный поток (реальные данные)</option>
+              <option value="6">+6 внеплановых фур (Утренний пик)</option>
+              <option value="12">+12 фур (Затор у ворот / сбой трафика)</option>
+              <option value="18">+18 фур (Критический шторм очередей)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Активных бригад / секций доков</label>
+            <select id="bays-select" onchange="runOptimization()">
+              <option value="0">Авто (по штату терминала)</option>
+              <option value="2">2 секции (Дефицит персонала)</option>
+              <option value="4">4 секции (Стандартная смена)</option>
+              <option value="6">6 секций (Усиленная смена)</option>
+              <option value="8">8 секций (Максимальный ресурс)</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="runOptimization()" style="height:38px;">
+            ⚡ Пересчитать расписание AI
+          </button>
+        </div>
+
+        <div class="preset-strip" id="preset-bottlenecks">
+          <span class="preset-label">🔥 Топ узких мест сети:</span>
+        </div>
+      </section>
+
+      <!-- KPI Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Средний простой фуры (Detention)</div>
+          <div class="kpi-value-row">
+            <span class="kpi-main" id="kpi-avg-after">-- мин</span>
+            <span class="kpi-old" id="kpi-avg-before">-- мин</span>
+            <span class="kpi-badge badge-emerald" id="kpi-reduction-pct">-0%</span>
+          </div>
+          <div class="kpi-sub" id="kpi-total-saved">Сэкономлено суммарно: -- мин</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Контроль часов работы склада</div>
+          <div class="kpi-value-row">
+            <span class="kpi-main" id="kpi-ooh-caught">0</span>
+            <span class="kpi-badge badge-amber" id="kpi-fac-hours">24/7</span>
+          </div>
+          <div class="kpi-sub" id="kpi-reroute-sub">Устранено простоев у закрытых ворот</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Приоритет Fast-Track &amp; Рефрижераторы</div>
+          <div class="kpi-value-row">
+            <span class="kpi-main" id="kpi-fast-track">0 фур</span>
+            <span class="kpi-badge badge-blue" id="kpi-reefer-saved">❄️ 0 реф.</span>
+          </div>
+          <div class="kpi-sub">Ускоренная разгрузка критических грузов</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Финансовый и Эко-эффект AI</div>
+          <div class="kpi-value-row">
+            <span class="kpi-main" id="kpi-cost-saved" style="color:#34d399;">$0</span>
+            <span class="kpi-badge badge-emerald" id="kpi-fuel-saved">0 гал.</span>
+          </div>
+          <div class="kpi-sub" id="kpi-co2-saved">Снижение штрафов за простой и холостого хода</div>
+        </div>
+      </section>
+
+      <!-- Charts & Dock Allocation Board -->
+      <section class="dual-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📉 Почасовой профиль простоев (До vs После AI-регулирования)</div>
+            <span style="font-size:0.75rem; color:#94a3b8;" id="chart-hours-hint">Рабочее окно терминала</span>
+          </div>
+          <div class="chart-box">
+            <canvas id="hourlyChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🏗️ Распределение фур по активным докам (Time-Slot Карта)</div>
+            <span style="font-size:0.75rem; color:#60a5fa;" id="active-bays-badge">Активных секций: --</span>
+          </div>
+          <div class="dock-bays-container" id="dock-bays-board"></div>
+        </div>
+      </section>
+
+      <!-- Detailed Schedule & Queue Table -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Детальная очередь и оптимизированное расписание тайм-слотов</div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setTableFilter('ALL', this)">Все рейсы</button>
+            <button class="filter-tab" onclick="setTableFilter('CRITICAL', this)">🔥 Критический приоритет</button>
+            <button class="filter-tab" onclick="setTableFilter('REEFER', this)">❄️ Рефрижераторы</button>
+            <button class="filter-tab" onclick="setTableFilter('OOH', this)">🕒 Вне рабочих часов</button>
+            <button class="filter-tab" onclick="setTableFilter('REROUTED', this)">🔄 Перенаправленные в хаб</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Рейс / Груз</th>
+                <th>Тип &amp; Контракт</th>
+                <th>Приоритет AI</th>
+                <th>Факт. прибытие</th>
+                <th>Назначенный слот AI</th>
+                <th>Док / Терминал</th>
+                <th>Простой (До → После)</th>
+                <th>Решение AI-агента</th>
+              </tr>
+            </thead>
+            <tbody id="schedule-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ML Detention & Best Slot Predictor Calculator -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">🧠 ML-Калькулятор прогноза простоя и подбора идеального окна прибытия (HistGradientBoosting)</div>
+          <span style="font-size:0.76rem; color:#34d399;" id="ml-metrics-badge">Модель обучена на 45 000 рейсов</span>
+        </div>
+        <div class="controls-grid" style="grid-template-columns: repeat(5, 1fr) auto;">
+          <div class="form-group">
+            <label>Тип груза</label>
+            <select id="ml-load-type">
+              <option value="Refrigerated">Refrigerated (Рефрижератор)</option>
+              <option value="Dry Van">Dry Van (Сухой фургон)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Тип контракта</label>
+            <select id="ml-booking-type">
+              <option value="Dedicated">Dedicated (Выделенный)</option>
+              <option value="Contract">Contract (Контракт)</option>
+              <option value="Spot">Spot (Спотовый)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Вес груза (lbs)</label>
+            <input type="number" id="ml-weight" value="35000" min="5000" max="45000" step="1000" />
+          </div>
+          <div class="form-group">
+            <label>Паллет (pieces)</label>
+            <input type="number" id="ml-pieces" value="18" min="1" max="35" />
+          </div>
+          <div class="form-group">
+            <label>Планируемый час прибытия</label>
+            <select id="ml-hour">
+              <option value="6">06:00</option>
+              <option value="8">08:00 (Утренний пик)</option>
+              <option value="10">10:00</option>
+              <option value="12">12:00</option>
+              <option value="14">14:00</option>
+              <option value="16">16:00</option>
+              <option value="18" selected>18:00 (Вечер / закрытие)</option>
+              <option value="21">21:00 (Ночь)</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="runMLPrediction()" style="height:38px;">
+            🔍 Рассчитать слот
+          </button>
+        </div>
+        <div id="ml-prediction-result" style="margin-top:14px; padding:12px 16px; background:#0f172a; border-radius:10px; border:1px solid #1e293b; font-size:0.84rem;">
+          Нажмите «Рассчитать слот» для получения прогноза ML-модели по текущему складу.
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Sidebar: Interactive AI Dispatcher Agent -->
+    <aside class="agent-panel">
+      <div class="agent-header">
+        <div>
+          <div style="font-weight:700; font-size:0.95rem; display:flex; align-items:center; gap:7px;">
+            🤖 AI-Диспетчер Очередей
+          </div>
+          <div style="font-size:0.74rem; color:#94a3b8;">Анализ узких мест, перестановка слотов и маршрутизация</div>
+        </div>
+      </div>
+
+      <div class="agent-prompts">
+        <button class="prompt-btn" onclick="sendQuickPrompt('Оптимизируй очередь текущего склада и покажи главные перестановки')">
+          ⚡ Оптимизировать текущий склад
+        </button>
+        <button class="prompt-btn" onclick="sendQuickPrompt('Где сейчас самые большие очереди и узкие места во всей логистической сети?')">
+          📊 Топ узких мест сети
+        </button>
+        <button class="prompt-btn" onclick="sendQuickPrompt('Как приоритизируются рефрижераторы (Refrigerated) и контракты Dedicated?')">
+          ❄️ Приоритет Рефрижераторов
+        </button>
+        <button class="prompt-btn" onclick="sendQuickPrompt('Сделай ML-прогноз лучшего окна прибытия для этого терминала')">
+          🧠 ML-рекомендация слота
+        </button>
+      </div>
+
+      <div class="chat-messages" id="chat-messages"></div>
+
+      <div class="chat-input-row">
+        <input
+          type="text"
+          id="chat-input"
+          placeholder="Спросите агента (напр.: Оптимизируй склад в Атланте FAC00012)..."
+          onkeydown="if(event.key==='Enter') sendChatMessage()"
+        />
+        <button class="btn btn-primary" onclick="sendChatMessage()">➤</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- LLM Configuration Modal -->
+  <div class="modal-backdrop" id="config-modal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-size:1.02rem;">⚙️ Настройка интеллекта AI-Агента</h3>
+        <button class="btn btn-secondary" onclick="closeConfigModal()" style="padding:4px 10px;">✕</button>
+      </div>
+      <p style="font-size:0.8rem; color:#94a3b8;">
+        По умолчанию агент работает в <b>Гибридном Автономном режиме</b> (ML-модель + эвристическое ядро оптимизации расписания доков) и не требует внешних ключей. При желании вы можете подключить внешний LLM API.
+      </p>
+      <div class="form-group">
+        <label>Провайдер AI</label>
+        <select id="cfg-provider">
+          <option value="autonomous">Автономное ML &amp; Оптимизационное Ядро (Без API-ключа)</option>
+          <option value="gemini">Google Gemini API (gemini-2.5-flash)</option>
+          <option value="openai">OpenAI API (gpt-4o-mini / gpt-4o)</option>
+          <option value="ollama">Локальная LLM через Ollama</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>API Ключ (для Gemini / OpenAI)</label>
+        <input type="password" id="cfg-apikey" placeholder="Вставьте API ключ (опционально)..." />
+      </div>
+      <div class="form-group">
+        <label>Название модели</label>
+        <input type="text" id="cfg-model" value="gemini-2.5-flash" />
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
+        <button class="btn btn-secondary" onclick="closeConfigModal()">Отмена</button>
+        <button class="btn btn-primary" onclick="saveAgentConfig()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

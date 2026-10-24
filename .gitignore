@@ -1,0 +1,19 @@
+# Python bytecode and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local credentials and dataset files
+.env
+.env.*
+!.env.example
+data/
+archive/
+*.csv
+
+# Generated authoring and temporary artifact data
+.presentation-build/
+.chart-data-*/
+~$*
+

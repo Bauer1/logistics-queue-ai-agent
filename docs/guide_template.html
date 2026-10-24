@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Руководство пользователя и разбор кейсов (Атланта и Филадельфия) — AI-Агент Логистика</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 15mm 14mm 15mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      line-height: 1.48;
+      font-size: 10pt;
+    }
+    .header-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: #ffffff;
+      padding: 22px 26px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+    .header-banner .tag {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #7dd3fc;
+      font-size: 8pt;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .header-banner h1 {
+      font-size: 18.5pt;
+      font-weight: 800;
+      margin-bottom: 5px;
+      letter-spacing: -0.02em;
+    }
+    .header-banner p {
+      font-size: 9.5pt;
+      color: #cbd5e1;
+    }
+    h2 {
+      font-size: 13pt;
+      font-weight: 800;
+      color: #1e3a8a;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin: 16px 0 9px 0;
+    }
+    h3 {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 10px 0 5px 0;
+    }
+    p {
+      margin-bottom: 7px;
+    }
+    ul, ol {
+      margin: 5px 0 9px 18px;
+    }
+    li {
+      margin-bottom: 3px;
+    }
+    code {
+      font-family: Consolas, 'Courier New', monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 9pt;
+      border: 1px solid #e2e8f0;
+    }
+    .code-block {
+      font-family: Consolas, 'Courier New', monospace;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 9px 12px;
+      border-radius: 7px;
+      font-size: 9pt;
+      margin: 6px 0 10px 0;
+      white-space: pre-wrap;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 8px 0;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+      margin: 8px 0 12px 0;
+    }
+    .stat-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-top: 3px solid #2563eb;
+      border-radius: 8px;
+      padding: 9px 11px;
+    }
+    .stat-box .val {
+      font-size: 13pt;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .stat-box .lbl {
+      font-size: 8pt;
+      color: #475569;
+    }
+    .info-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #2563eb;
+      border-radius: 8px;
+      padding: 9px 13px;
+      margin-bottom: 9px;
+      page-break-inside: avoid;
+    }
+    .info-card.emerald {
+      border-left-color: #10b981;
+      background: #f0fdf4;
+    }
+    .info-card.amber {
+      border-left-color: #f59e0b;
+      background: #fffbeb;
+    }
+    .info-card.purple {
+      border-left-color: #7c3aed;
+      background: #f5f3ff;
+    }
+    .badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 8pt;
+      font-weight: 700;
+    }
+    .badge-red { background: #fee2e2; color: #b91c1c; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .badge-purple { background: #ede9fe; color: #6d28d9; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0 12px 0;
+      font-size: 8.8pt;
+      page-break-inside: avoid;
+    }
+    th {
+      background: #1e293b;
+      color: #ffffff;
+      text-align: left;
+      padding: 6px 8px;
+      font-weight: 700;
+    }
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+    .footer {
+      margin-top: 18px;
+      padding-top: 8px;
+      border-top: 1px solid #cbd5e1;
+      font-size: 8pt;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1: OVERVIEW, LAUNCH & ARCHITECTURE -->
+  <div class="header-banner">
+    <div class="tag">Техническая документация, руководство пользователя и разбор кейсов</div>
+    <h1>🚛 AI-Агент Управления Очередями и Доками в Логистике</h1>
+    <p>Интеллектуальное регулирование очередей (Time-Slot Management), динамическая приоритизация грузов, межскладская балансировка хабов (Атланта, Филадельфия) и ML-прогноз простоев</p>
+  </div>
+
+  <div class="grid-4">
+    <div class="stat-box">
+      <div class="val">50 складов</div>
+      <div class="lbl">Терминалы, хабы и РЦ в США (facilities.csv)</div>
+    </div>
+    <div class="stat-box">
+      <div class="val">170 820</div>
+      <div class="lbl">Событий погрузки и выгрузки (delivery_events.csv)</div>
+    </div>
+    <div class="stat-box">
+      <div class="val">-66% .. -82%</div>
+      <div class="lbl">Снижение среднего простоя фур в Атланте и Филадельфии</div>
+    </div>
+    <div class="stat-box">
+      <div class="val">45 000 рейсов</div>
+      <div class="lbl">Обучающая выборка ML-модели HistGradientBoosting</div>
+    </div>
+  </div>
+
+  <h2>1. Как запустить проект</h2>
+  <p>Проект расположен в папке <code>c:\Users\zhuma\OneDrive\Documents\Projects\AI-агент</code>. Доступны два способа запуска:</p>
+
+  <div class="grid-2">
+    <div class="info-card emerald">
+      <h3>Способ 1. В один клик (start.bat)</h3>
+      <p>Дважды кликните по файлу <code>start.bat</code> в папке проекта:</p>
+      <p><code>c:\Users\zhuma\OneDrive\Documents\Projects\AI-агент\start.bat</code></p>
+      <p>Скрипт сам запустит сервер и откроет дашборд в браузере по адресу <b>http://127.0.0.1:8000</b>.</p>
+    </div>
+    <div class="info-card">
+      <h3>Способ 2. Через терминал (PowerShell / CMD)</h3>
+      <div class="code-block">cd "c:\Users\zhuma\OneDrive\Documents\Projects\AI-агент"
+python run.py</div>
+      <p>После запуска перейдите по адресу: <b>http://127.0.0.1:8000</b>.</p>
+    </div>
+  </div>
+
+  <h2>2. Диагностика датасета и архитектура AI-Агента</h2>
+  <p>Анализ датасета (<code>c:\Users\zhuma\Downloads\archive</code>) выявил системные причины очередей (средний простой — <b>91.5 мин</b>, максимум — <b>239 мин</b>, доля опозданий — <b>44.3%</b>):</p>
+  <ul>
+    <li><b>Прибытие вне рабочих окон складов (<code>operating_hours</code>)</b>: на складах с режимом <code>8AM-5PM</code> и <code>7AM-7PM</code> до <b>49.1% фур</b> прибывают к закрытым воротам и ждут утренней смены.</li>
+    <li><b>Отсутствие приоритета для скоропортящихся и контрактных грузов</b>: рефрижераторы (<code>Refrigerated</code>) и выделенные контракты (<code>Dedicated</code>) стоят в общей очереди со спотовыми рейсами (<code>Spot</code>).</li>
+  </ul>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Модуль / Файл</th>
+        <th>Класс / Компонент</th>
+        <th>Назначение в системе</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>backend/data_loader.py</code></td>
+        <td><code>LogisticsDataStore</code></td>
+        <td>Индексация <code>facilities.csv</code>, <code>delivery_events.csv</code>, <code>loads.csv</code>, <code>trips.csv</code>, <code>customers.csv</code>, <code>drivers.csv</code>, <code>trucks.csv</code>. Расчет индекса заторов и городских кластеров хабов.</td>
+      </tr>
+      <tr>
+        <td><code>backend/ml_predictor.py</code></td>
+        <td><code>DetentionMLPredictor</code></td>
+        <td>ML-модель <code>HistGradientBoostingRegressor</code> (15 признаков). Прогнозирует простой для каждого часа суток, оценивает время разгрузки у дока и рекомендует лучшее окно прибытия.</td>
+      </tr>
+      <tr>
+        <td><code>backend/queue_optimizer.py</code></td>
+        <td><code>QueueOptimizerEngine</code></td>
+        <td>Расчет индекса приоритета (0–99 баллов), назначение активных доков (<code>Док #1..N</code>), синхронизация с рабочими часами и перенаправление в открытые хабы того же города.</td>
+      </tr>
+      <tr>
+        <td><code>backend/ai_agent.py</code></td>
+        <td><code>HybridLogisticsAgent</code></td>
+        <td>Гибридный AI-диспетчер с вызовом инструментов. Работает автономно без API-ключей и поддерживает подключение внешних LLM (Google Gemini, OpenAI, Ollama).</td>
+      </tr>
+      <tr>
+        <td><code>frontend/index.html</code></td>
+        <td>Web Control Tower</td>
+        <td>Интерактивный веб-интерфейс с графиками До/После AI, картой доков, фильтрами очереди, стресс-тестом, ML-калькулятором и чатом с AI-агентом.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Математическая модель приоритизации и теория очередей (СМО)</h3>
+  <p>Каждой фуре начисляется <b>Индекс приоритета (0–99 баллов)</b>: тип груза <code>Refrigerated</code> (<b>+34 балла</b>) или <code>Dry Van</code> (<b>+10</b>) + тип контракта <code>Dedicated</code> (<b>+24</b>), <code>Contract</code> (<b>+16</b>), <code>Spot</code> (<b>+6</b>) + срочность/риск срыва SLA (до <b>+26 баллов</b>) + вес и выручка рейса (до <b>+16 баллов</b>). При 75+ баллах активируется <b>Fast-Track</b> подача к первому свободному доку. В теории массового обслуживания (системы <i>G/G/c</i>) положительное асимметричное время простоя и разгрузки аппроксимируется <b>гамма-распределением</b> <code>Gamma(k, θ)</code> для контроля тяжелых «хвостов» задержек (P90/P95).</p>
+
+  <!-- PAGE 2: ATLANTA & PHILADELPHIA DEEP DIVE CASE STUDIES -->
+  <div class="page-break"></div>
+
+  <h2>3. Выделенный разбор хабов в Атланте (GA) и Филадельфии (PA)</h2>
+  <p>В датасете города <b>Атланта</b> и <b>Филадельфия</b> представляют собой два показательных кластера, где в одном географическом узле расположено сразу несколько терминалов с разными режимами работы (<code>operating_hours</code>) и разным числом ворот (<code>dock_doors</code>). Это позволяет AI-агенту применять <b>межскладскую балансировку (Cross-Dock City Overflow)</b>.</p>
+
+  <h3>3.1. Кластер терминалов в г. Атланта (Atlanta, GA — 4 объекта, 13 558 событий)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>ID склада</th>
+        <th>Название и тип</th>
+        <th>Доков</th>
+        <th>Режим работы</th>
+        <th>Рейсов</th>
+        <th>Ср. простой</th>
+        <th>Вне часов</th>
+        <th>Роль в AI-балансировке</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>FAC00012</b></td>
+        <td>Atlanta Distribution Center (РЦ)</td>
+        <td><b>16</b></td>
+        <td><code>8AM-5PM</code></td>
+        <td>3 278</td>
+        <td>92.6 мин</td>
+        <td><span class="badge badge-red">49.1%</span></td>
+        <td><b>Узкое место сети</b> (мало доков + короткий день)</td>
+      </tr>
+      <tr>
+        <td><b>FAC00006</b></td>
+        <td>Atlanta Warehouse (РЦ)</td>
+        <td><b>149</b></td>
+        <td><code>8AM-5PM</code></td>
+        <td>3 340</td>
+        <td>92.5 мин</td>
+        <td><span class="badge badge-red">47.3%</span></td>
+        <td>Мега-терминал для разгрузки дневных пиков</td>
+      </tr>
+      <tr>
+        <td><b>FAC00043</b></td>
+        <td>Atlanta Warehouse (Склад)</td>
+        <td><b>88</b></td>
+        <td><code>7AM-7PM</code></td>
+        <td>3 522</td>
+        <td>91.3 мин</td>
+        <td><span class="badge badge-blue">33.4%</span></td>
+        <td>Прием утренней (07:00) и вечерней (до 19:00) волны</td>
+      </tr>
+      <tr>
+        <td><b>FAC00026</b></td>
+        <td>Atlanta Warehouse (Склад)</td>
+        <td><b>31</b></td>
+        <td><code>6AM-10PM</code></td>
+        <td>3 418</td>
+        <td>90.5 мин</td>
+        <td><span class="badge badge-green">20.3%</span></td>
+        <td><b>Главный расширенный хаб-дублер</b> (с 06:00 до 22:00)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-card purple">
+    <h3>Разбор реального примера работы AI-агента в Атланте (терминал FAC00012)</h3>
+    <p><b>Проблема до AI:</b> На терминал <code>FAC00012</code> (всего 16 ворот, открыт строго с 08:00 до 17:00) в течение окна прибывают 16 фур. Из них <b>11 фур (68%)</b> приезжают вне рабочих часов (в 03:45, 04:34, 07:19 утра или после 17:00). Суммарный простой составляет <b>1 252 минуты</b> (в среднем <b>78.2 мин</b> на фуру, а отдельные фуры ждут до <b>179 мин</b>).</p>
+    <p><b>Пошаговые действия AI-Агента на конкретных рейсах из датасета:</b></p>
+    <ol>
+      <li><b>Рейс <code>LOAD00064616</code> (событие <code>EVT00129232</code>, клиент <i>ABC Manufacturing</i>)</b>:
+        <ul>
+          <li><i>Входные данные:</i> Рефрижератор (<code>Refrigerated</code>), контракт <code>Contract</code>, фактическое прибытие — <b>03:45 утра</b> (склад <code>FAC00012</code> закрыт до 08:00!). Простой без AI составил <b>103 минуты</b>.</li>
+          <li><i>Решение AI:</i> Присвоен высокий приоритет <b>63.4 балла</b> (защита холодовой цепи +34). Чтобы рефрижератор не жег топливо у закрытых ворот, агент перенаправляет его в партнерский хаб <code>FAC00026</code> (режим <code>6AM-10PM</code>, Секция Док #2). Простой снижен со <b>103 мин до 28 мин</b> (экономия <b>-75 мин</b>).</li>
+        </ul>
+      </li>
+      <li><b>Рейс <code>LOAD00064692</code> (событие <code>EVT00129383</code>, клиент <i>First Supply Chain</i>)</b>:
+        <ul>
+          <li><i>Входные данные:</i> <code>Dry Van</code>, выделенный контракт <code>Dedicated</code> (+24 балла), прибытие в <b>07:19 утра</b> (за 41 минуту до открытия <code>FAC00012</code>). Исходный простой — <b>133 минуты</b>.</li>
+          <li><i>Решение AI:</i> Поскольку в Атланте склад <code>FAC00043</code> работает с <b>07:00 утра</b> (<code>7AM-7PM</code>, 88 ворот), агент автоматически перебалансирует фуру на <code>Хаб FAC00043 • Док #3</code> со стартом разгрузки в <code>07:34</code>. Простой падает со <b>133 мин до 27 мин</b> (экономия <b>-106 мин</b>!).</li>
+        </ul>
+      </li>
+      <li><b>Рейс <code>LOAD00064555</code> (событие <code>EVT00129110</code>, клиент <i>First Distribution</i>)</b>:
+        <ul>
+          <li><i>Входные данные:</i> <code>Refrigerated</code>, прибытие в дневное рабочее окно в <b>10:41</b>. Из-за несогласованной живой очереди исходный простой составил <b>102 минуты</b>.</li>
+          <li><i>Решение AI:</i> Приоритет <b>69.2 балла</b> → активируется правило <b>Fast-Track (Приоритет Рефрижератор/SLA)</b>. Фура ставится без очереди на <code>Док #1</code> прямо в <code>10:41</code>. Простой сокращается со <b>102 мин до 10 мин</b> (экономия <b>-92 мин</b>).</li>
+        </ul>
+      </li>
+    </ol>
+    <p><b>Итоговый результат по узлу Атланты (FAC00012):</b> средний простой снижен с <b>78.2 мин до 21.4 мин (-72.7%)</b>, сэкономлено <b>910 минут</b> простоя, <b>$1 137.50</b> прямых штрафов и <b>12.9 галлонов</b> дизеля (-131.3 кг CO₂).</p>
+  </div>
+
+  <h3>3.2. Кластер терминалов в г. Филадельфия (Philadelphia, PA — 2 кросс-док хаба, 6 870 событий)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>ID склада</th>
+        <th>Название и тип</th>
+        <th>Доков</th>
+        <th>Режим работы</th>
+        <th>Рейсов</th>
+        <th>Ср. простой</th>
+        <th>Вне часов</th>
+        <th>Роль в AI-балансировке</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>FAC00008</b></td>
+        <td>Philadelphia Hub (Cross-Dock)</td>
+        <td><b>110</b></td>
+        <td><code>8AM-5PM</code></td>
+        <td>3 435</td>
+        <td>92.2 мин</td>
+        <td><span class="badge badge-red">47.9%</span></td>
+        <td>Дневной кросс-док хаб (закрыт ночью и вечером)</td>
+      </tr>
+      <tr>
+        <td><b>FAC00027</b></td>
+        <td>Philadelphia Hub (Cross-Dock)</td>
+        <td><b>144</b></td>
+        <td><code>24/7</code></td>
+        <td>3 435</td>
+        <td>92.0 мин</td>
+        <td><span class="badge badge-green">0.0%</span></td>
+        <td><b>Круглосуточный мега-хаб (24/7)</b> — принимает весь ночной поток</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-card emerald">
+    <h3>Разбор реального примера работы AI-агента в Филадельфии (терминал FAC00008 → FAC00027)</h3>
+    <p><b>Идеальная синергия двух хабов:</b> В Филадельфии дневной хаб <code>FAC00008</code> (<code>8AM-5PM</code>) теряет 47.9% рейсов на ночных и ранних простоях (средний простой в пиковом окне — <b>100.9 мин</b>, суммарно <b>1 615 мин</b> на 16 фур), тогда как соседний хаб <code>FAC00027</code> имеет <b>144 дока и работает 24/7 без перерывов</b>!</p>
+    <ul>
+      <li><b>Кейс 1 — Ночной рефрижератор (<code>LOAD00050360</code>, клиент <i>ABC Manufacturing</i>):</b> прибывает на закрытый <code>FAC00008</code> в <b>05:51 утра</b> (простой до AI — <b>72 мин</b>). Агент видит высокий приоритет (<b>65.0 баллов</b>) и мгновенно перенаправляет фуру в открытый круглосуточный хаб <b><code>FAC00027 (24/7) • Док #1</code></b> со слотом <code>06:06</code>. Простой падает до <b>24 мин</b>.</li>
+      <li><b>Кейс 2 — Несрочный спотовый рейс (<code>LOAD00050331</code>, клиент <i>Premier Group</i>):</b> сухой фургон (<code>Dry Van</code>, <code>Spot</code>, низкий приоритет <b>28.5 баллов</b>) прибывает в <b>04:11</b>. Вместо перегрузки круглосуточного хаба агент заранее уведомляет водителя и <b>переносит тайм-слот на открытие дневной смены <code>08:00 (Док #1)</code></b>, снижая фактический простой у ворот с <b>44 мин до 14 мин</b>.</li>
+      <li><b>Кейс 3 — Критический SLA-рейс (<code>LOAD00050433</code>, <i>American Manufacturing</i>):</b> рефрижератор по контракту <code>Dedicated</code> прибывает в <b>10:48</b> с критическим приоритетом <b>85.5 баллов</b>. Агент выделяет <b>Fast-Track <code>Док #2</code></b> в минуту прибытия (<code>10:48</code>), сокращая простой со <b>148 мин до 10 мин (-138 мин!)</b>.</li>
+    </ul>
+    <p><b>Итоговый результат по Филадельфии (FAC00008):</b> средний простой снижен со <b>100.9 мин до 18.3 мин (сокращение на -81.9%!)</b>, сэкономлено <b>1 322 минуты (22 часа)</b> простоя фур и <b>$1 652.50</b> за одно операционное окно.</p>
+  </div>
+
+  <!-- PAGE 3: STEP-BY-STEP WEB UI GUIDE -->
+  <div class="page-break"></div>
+
+  <h2>4. Пошаговая инструкция по работе с веб-сайтом (Control Tower)</h2>
+  <p>Веб-интерфейс по адресу <b>http://127.0.0.1:8000</b> позволяет интерактивно управлять всеми 50 складами (включая хабы Атланты и Филадельфии):</p>
+
+  <div class="info-card">
+    <h3>Шаг 1. Панель управления терминалом и симуляции очередей</h3>
+    <ul>
+      <li><b>Логистический терминал / склад</b>: выберите нужный объект (например, <code>FAC00012 — Atlanta Distribution Center</code> или <code>FAC00008 — Philadelphia Hub</code>) либо нажмите на быстрые чипы <b>«🔥 Топ узких мест сети»</b>.</li>
+      <li><b>Стресс-тест (Симуляция пикового наплыва)</b>: добавьте <code>+6</code>, <code>+12</code> или <code>+18 внеплановых фур</code>, чтобы протестировать работу алгоритма при экстремальном заторе.</li>
+      <li><b>Активных бригад / секций доков</b>: изменяйте число одновременно работающих секций разгрузки (от 2 до 8).</li>
+      <li><b>Галочка «Межскладская балансировка внутри города (Cross-Dock Overflow)»</b>: включает или отключает переброску внеурочных фур между хабами одного города (например, из <code>FAC00008</code> в <code>FAC00027</code> в Филадельфии). Попробуйте снять и включить эту галочку, чтобы увидеть разницу в KPI!</li>
+    </ul>
+  </div>
+
+  <div class="info-card emerald">
+    <h3>Шаг 2. Карточки KPI, Почасовой график и Карта доков (Time-Slot Карта)</h3>
+    <ul>
+      <li><b>4 карточки KPI</b> в реальном времени показывают средний простой До/После AI, число перехваченных внеурочных фур, число рейсов Fast-Track и прямую экономию в долларах (<code>$</code>), галлонах дизеля и кг CO₂.</li>
+      <li><b>Почасовой профиль простоев (слева)</b>: наглядно демонстрирует сглаживание утренних и вечерних пиков (розовые столбцы — До AI, зеленые — После AI).</li>
+      <li><b>Распределение фур по активным докам (справа)</b>: показывает расписание каждого дока (<code>🚪 Док #1..N</code>) и партнерских хабов города (<code>🔄 Хаб FAC00027 • Док #1</code>) с точными тайм-слотами.</li>
+    </ul>
+  </div>
+
+  <div class="info-card">
+    <h3>Шаг 3. Детальная таблица очереди и фильтрация</h3>
+    <p>Над таблицей расположены кнопки фильтрации: <b>Все рейсы</b>, <b>🔥 Критический приоритет</b>, <b>❄️ Рефрижераторы</b>, <b>🕒 Вне рабочих часов</b> и <b>🔄 Перенаправленные в хаб</b>. В каждой строке видны баллы приоритета, фактическое прибытие, новый слот AI и экономия минут.</p>
+  </div>
+
+  <div class="info-card amber">
+    <h3>Шаг 4. ML-Калькулятор прогноза простоя и подбора слота</h3>
+    <p>В нижней части экрана укажите параметры нового груза (<code>Refrigerated</code> / <code>Dry Van</code>, контракт, вес в lbs, число паллет и час прибытия) и нажмите <b>«🔍 Рассчитать слот»</b>. Обученная модель <code>HistGradientBoostingRegressor</code> выдаст прогноз ожидания и порекомендует идеальный час подачи фуры.</p>
+  </div>
+
+  <div class="info-card">
+    <h3>Шаг 5. Правая панель — Чат с AI-Диспетчером Очередей</h3>
+    <ul>
+      <li>Нажимайте на быстрые кнопки над чатом или пишите команды напрямую, например:
+        <ul>
+          <li><i>«Оптимизируй склад в Атланте FAC00012»</i></li>
+          <li><i>«Оптимизируй хаб в Филадельфии FAC00008»</i></li>
+          <li><i>«Где сейчас самые большие очереди в сети?»</i></li>
+        </ul>
+      </li>
+      <li>Агент автоматически вызовет инструменты оптимизации, переключит дашборд на нужный город и выдаст аналитический отчет с расчетом экономии.</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <span>Документация: <b>Logistics Queue &amp; Dock AI-Agent Control Tower</b></span>
+    <span>Локальный сервер: <b>http://127.0.0.1:8000</b></span>
+  </div>
+
+</body>
+</html>
