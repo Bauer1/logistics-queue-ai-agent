@@ -66,8 +66,9 @@ class LogisticsDataStore:
 
         # Build facility dictionary and city groupings
         for _, row in self.facilities.iterrows():
-            f_dict = row.to_dict()
-            fid = f_dict["facility_id"]
+            raw_dict = row.to_dict()
+            f_dict: Dict[str, Any] = {str(k): v for k, v in raw_dict.items()}
+            fid = str(f_dict["facility_id"])
             self.facility_dict[fid] = f_dict
             city_key = f"{f_dict['city']}, {f_dict['state']}"
             self.city_facilities.setdefault(city_key, []).append(f_dict)
@@ -94,25 +95,25 @@ class LogisticsDataStore:
         ).reset_index()
 
         for _, row in grouped.iterrows():
-            fid = row["facility_id"]
+            fid = str(row["facility_id"])
             fac_info = self.facility_dict.get(fid, {})
             doors = max(1, int(fac_info.get("dock_doors", 50)))
             # Congestion index combines avg detention, out-of-hours rate, and event density per door
-            density_score = (row["total_events"] / doors) / 100.0
+            density_score = (float(row["total_events"]) / doors) / 100.0
             congestion_index = min(
                 100.0,
                 round(
-                    (row["avg_detention"] / 120.0) * 45.0
-                    + (row["out_of_hours_rate"] * 35.0)
+                    (float(row["avg_detention"]) / 120.0) * 45.0
+                    + (float(row["out_of_hours_rate"]) * 35.0)
                     + min(20.0, density_score * 8.0),
                     1,
                 ),
             )
             city_key = f"{fac_info.get('city', '')}, {fac_info.get('state', '')}"
             alt_hubs = [
-                h["facility_id"]
+                str(h["facility_id"])
                 for h in self.city_facilities.get(city_key, [])
-                if h["facility_id"] != fid
+                if str(h["facility_id"]) != fid
             ]
             self.facility_stats[fid] = {
                 **fac_info,
@@ -145,7 +146,7 @@ class LogisticsDataStore:
 
         self.top_congested_days = []
         for _, r in top_daily.iterrows():
-            fid = r["facility_id"]
+            fid = str(r["facility_id"])
             finfo = self.facility_dict.get(fid, {})
             self.top_congested_days.append(
                 {
@@ -155,7 +156,7 @@ class LogisticsDataStore:
                     "state": finfo.get("state", ""),
                     "operating_hours": finfo.get("operating_hours", "24/7"),
                     "dock_doors": int(finfo.get("dock_doors", 50)),
-                    "date": r["sched_date"],
+                    "date": str(r["sched_date"]),
                     "events_count": int(r["events_count"]),
                     "total_detention": int(r["total_detention"]),
                     "avg_detention": round(float(r["avg_detention"]), 1),

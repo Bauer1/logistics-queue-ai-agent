@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Архитектура и логика работы скриптов — AI-Агент Логистика</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 8mm 11mm 8mm 11mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      line-height: 1.28;
+      font-size: 7.9pt;
+    }
+    .header-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: #ffffff;
+      padding: 11px 16px;
+      border-radius: 9px;
+      margin-bottom: 8px;
+    }
+    .header-banner .tag {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #7dd3fc;
+      font-size: 7pt;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 3px;
+    }
+    .header-banner h1 {
+      font-size: 13.8pt;
+      font-weight: 800;
+      margin-bottom: 2px;
+      letter-spacing: -0.02em;
+    }
+    .header-banner p {
+      font-size: 8pt;
+      color: #cbd5e1;
+    }
+    h2 {
+      font-size: 9.8pt;
+      font-weight: 800;
+      color: #1e3a8a;
+      border-bottom: 1.5px solid #cbd5e1;
+      padding-bottom: 2px;
+      margin: 7px 0 4px 0;
+    }
+    h3 {
+      font-size: 8.6pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 2px 0 2px 0;
+    }
+    p {
+      margin-bottom: 3px;
+    }
+    ul, ol {
+      margin: 2px 0 4px 15px;
+    }
+    li {
+      margin-bottom: 1.5px;
+    }
+    code {
+      font-family: Consolas, 'Courier New', monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 0px 3px;
+      border-radius: 3px;
+      font-size: 7.4pt;
+      border: 1px solid #e2e8f0;
+    }
+    .code-block {
+      font-family: Consolas, 'Courier New', monospace;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 5px 8px;
+      border-radius: 5px;
+      font-size: 7.4pt;
+      margin: 3px 0 4px 0;
+      white-space: pre-wrap;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .info-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 3.5px solid #2563eb;
+      border-radius: 6px;
+      padding: 6px 9px;
+      margin-bottom: 5px;
+      page-break-inside: avoid;
+    }
+    .info-card.emerald {
+      border-left-color: #10b981;
+      background: #f0fdf4;
+    }
+    .info-card.amber {
+      border-left-color: #f59e0b;
+      background: #fffbeb;
+    }
+    .info-card.purple {
+      border-left-color: #7c3aed;
+      background: #f5f3ff;
+    }
+    .badge {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 7pt;
+      font-weight: 700;
+    }
+    .badge-red { background: #fee2e2; color: #b91c1c; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .badge-purple { background: #ede9fe; color: #6d28d9; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 3px 0 5px 0;
+      font-size: 7.5pt;
+      page-break-inside: avoid;
+    }
+    th {
+      background: #1e293b;
+      color: #ffffff;
+      text-align: left;
+      padding: 3.5px 6px;
+      font-weight: 700;
+    }
+    td {
+      padding: 3px 6px;
+      border-bottom: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+    .footer {
+      margin-top: 6px;
+      padding-top: 4px;
+      border-top: 1px solid #cbd5e1;
+      font-size: 7pt;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <div class="header-banner">
+    <div class="tag">Технический разбор кодовой базы • Архитектура скриптов</div>
+    <h1>⚙️ Логика работы скриптов проекта «AI-Агент Логистика»</h1>
+    <p>Подробное описание модулей бэкенда (FastAPI, Data Loader, ML Predictor, Queue Optimizer, Hybrid AI Agent) и клиентского дашборда</p>
+  </div>
+
+  <h2>Обзор модульной архитектуры</h2>
+  <p>Система построена по модульному принципу и разделена на точку входа (<code>run.py</code>), серверную часть в директории <code>backend/</code> и веб-интерфейс в <code>frontend/</code>:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 23%;">Файл / Скрипт</th>
+        <th style="width: 25%;">Основной класс / Функции</th>
+        <th>Назначение в цепочке обработки данных</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>run.py</code></td>
+        <td><code>is_port_in_use()</code></td>
+        <td>Проверка занятости порта <code>8000</code>, защита от повторного запуска и старт сервера <code>uvicorn</code>.</td>
+      </tr>
+      <tr>
+        <td><code>backend/main.py</code></td>
+        <td><code>FastAPI app</code></td>
+        <td>Инициализация всех ядер при старте, маршрутизация REST API и отдача статики фронтенда.</td>
+      </tr>
+      <tr>
+        <td><code>backend/data_loader.py</code></td>
+        <td><code>LogisticsDataStore</code></td>
+        <td>Загрузка 8 CSV-таблиц, парсинг рабочих часов, расчет индекса перегруженности и сбор очередей.</td>
+      </tr>
+      <tr>
+        <td><code>backend/ml_predictor.py</code></td>
+        <td><code>DetentionMLPredictor</code></td>
+        <td>Обучение <code>HistGradientBoostingRegressor</code>, прогноз по 24 слотам и вероятностная аналитика Гамма-распределения.</td>
+      </tr>
+      <tr>
+        <td><code>backend/queue_optimizer.py</code></td>
+        <td><code>QueueOptimizerEngine</code></td>
+        <td>Скоринг приоритетов (0–99), распределение фур по активным бригадам/докам и балансировка между хабами города.</td>
+      </tr>
+      <tr>
+        <td><code>backend/ai_agent.py</code></td>
+        <td><code>HybridLogisticsAgent</code></td>
+        <td>Автономное аналитическое ядро + интеграция с внешними LLM (Gemini, OpenAI, Ollama) и вызов инструментов.</td>
+      </tr>
+      <tr>
+        <td><code>frontend/app.js</code></td>
+        <td><code>loadOverview()</code>, <code>runOptimization()</code></td>
+        <td>Запросы к API, отрисовка KPI-карточек, графиков <code>Chart.js</code>, фильтрация расписания и чат с AI-диспетчером.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>1. Точка входа и API-сервер (<code>run.py</code> и <code>backend/main.py</code>)</h2>
+  <div class="grid-2">
+    <div class="info-card">
+      <h3>Скрипт запуска <code>run.py</code></h3>
+      <ul>
+        <li>Функция <code>is_port_in_use(host, port)</code> открывает TCP-сокет к <code>127.0.0.1:8000</code> с таймаутом 1 секунда.</li>
+        <li>Если сервер уже запущен, скрипт не падает с ошибкой занятого порта, а автоматически открывает вкладку браузера через <code>webbrowser.open(url)</code> и завершает процесс (<code>sys.exit(0)</code>).</li>
+        <li>Если порт свободен — запускает <code>uvicorn.run("backend.main:app", host="127.0.0.1", port=8000)</code>.</li>
+      </ul>
+    </div>
+    <div class="info-card emerald">
+      <h3>Сервер <code>backend/main.py</code></h3>
+      <ul>
+        <li>В хуке <code>@app.on_event("startup")</code> вызывает <code>store.load_all()</code> и обучает модель <code>predictor.train(sample_size=45000)</code>.</li>
+        <li>Эндпоинты REST API:
+          <ul>
+            <li><code>GET /api/overview</code> — агрегированные KPI сети и список всех 50 складов.</li>
+            <li><code>POST /api/optimize</code> — оптимизация очереди выбранного терминала.</li>
+            <li><code>POST /api/predict</code> — ML-прогноз простоя и поиск лучшего слота.</li>
+            <li><code>POST /api/agent/chat</code> и <code>/api/agent/config</code> — управление AI-агентом.</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>2. Загрузка и обогащение данных (<code>backend/data_loader.py</code>)</h2>
+  <p>Класс <code>LogisticsDataStore</code> отвечает за чтение реляционного датасета и предварительный расчет сетевых метрик:</p>
+  <ol>
+    <li><strong>Парсинг расписания складов (<code>parse_operating_hours</code>)</strong>: переводит строковые режимы работы (<code>"24/7"</code>, <code>"8AM-5PM"</code>, <code>"7AM-7PM"</code>, <code>"6AM-10PM"</code>) в числовые границы <code>(open_hour, close_hour, is_24_7)</code>.</li>
+    <li><strong>Расчет статистик и узких мест (<code>load_all</code>)</strong>:
+      <ul>
+        <li>Загружает таблицы <code>facilities.csv</code>, <code>loads.csv</code>, <code>trips.csv</code>, <code>drivers.csv</code>, <code>trucks.csv</code>, <code>customers.csv</code>, <code>routes.csv</code> и <code>delivery_events.csv</code>.</li>
+        <li>Вычисляет отклонение фактического прибытия от расписания (<code>arrival_delay_min</code>) и булев флаг приезда в закрытые часы склада (<code>out_of_hours</code>).</li>
+        <li>Группирует терминалы по городам (<code>city_facilities</code>), формируя для каждого склада список партнерских хабов в том же городе (<code>alternative_city_hubs</code>).</li>
+        <li>Рассчитывает <strong>индекс перегруженности (<code>congestion_index</code> от 0 до 100)</strong> по формуле, объединяющей средний простой, долю внеурочных прибытий и плотность рейсов на один док:
+          <div class="code-block">congestion_index = min(100.0, (avg_detention / 120.0) * 45.0 + (out_of_hours_rate * 35.0) + min(20.0, density_score * 8.0))</div>
+        </li>
+      </ul>
+    </li>
+    <li><strong>Выборка очереди терминала (<code>get_facility_queue_events</code>)</strong>: фильтрует события за окно <code>window_days</code> (если дата не передана, выбирает самый загруженный день терминала) и обогащает каждую строку через <code>LEFT JOIN</code> данными о грузе, рейсе, клиенте, водителе и тягаче.</li>
+  </ol>
+
+  <div class="footer">
+    <span>AI-Агент управления очередями и доками в логистике • Техническое описание скриптов</span>
+    <span>Страница 1 из 2</span>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page-break"></div>
+
+  <h2>3. Машинное обучение и Гамма-аналитика SLA (<code>backend/ml_predictor.py</code>)</h2>
+  <p>Класс <code>DetentionMLPredictor</code> объединяет регрессионную модель градиентного бустинга и вероятностное моделирование рисков:</p>
+
+  <div class="grid-2">
+    <div class="info-card">
+      <h3>Обучение <code>HistGradientBoostingRegressor</code> (<code>train</code>)</h3>
+      <ul>
+        <li>Обучается на <strong>15 признаках</strong>: число доков, часы открытия/закрытия, флаг 24/7, коды типа склада, события, груза и контракта, вес (lbs), число паллет, час прибытия, день недели, задержка прибытия, флаг внерабочего часа и часовая нагрузка на док.</li>
+        <li>Целевая переменная <code>y</code> комбинирует исторический простой (<code>65%</code>) и физический штраф (<code>35%</code>) за закрытые ворота, тоннаж и количество паллет.</li>
+        <li>Метод <code>estimate_service_duration_minutes()</code> вычисляет физическое время разгрузки у дока (от 25 до 120 мин) с учетом базового норматива, веса, паллет и <code>+12 мин</code> на проверку температурного режима для рефрижераторов.</li>
+      </ul>
+    </div>
+    <div class="info-card purple">
+      <h3>Прогноз слотов и Гамма-распределение</h3>
+      <ul>
+        <li><strong>24-часовой профиль (<code>predict_detention_and_best_slot</code>)</strong>: рассчитывает ожидаемый простой для каждого часа суток (<code>00:00–23:00</code>), добавляет время ожидания открытия ворот при приезде в закрытые часы и выбирает оптимальный слот с минимальной очередью.</li>
+        <li><strong>Аналитика SLA (<code>compute_gamma_analytics</code>)</strong>: методом моментов оценивает параметры Гамма-распределения по историческим простоям склада (<code>alpha = mean² / var</code>, <code>theta = var / mean</code>) и через <code>scipy.stats.gamma</code> вычисляет квантили <strong>P90</strong>, <strong>P95</strong> и вероятность нарушения 2-часового SLA: <code>P(T &gt; 120 мин)</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>4. Алгоритм оптимизации очереди и доков (<code>backend/queue_optimizer.py</code>)</h2>
+  <p>Класс <code>QueueOptimizerEngine</code> управляет перестроением очереди и назначением фур на конкретные доки:</p>
+
+  <div class="info-card amber">
+    <h3>Шаг 1: Многофакторный скоринг приоритета (<code>compute_priority_score</code> — от 15 до 99 баллов)</h3>
+    <ul>
+      <li><strong>Тип груза</strong>: <code>Refrigerated</code> (рефрижераторы) получают <strong>+34 балла</strong> для защиты холодовой цепи, <code>Dry Van</code> — <strong>+10 баллов</strong>.</li>
+      <li><strong>Уровень контракта</strong>: <code>Dedicated</code> (<strong>+24</strong>), <code>Contract</code> (<strong>+16</strong>), <code>Spot</code> (<strong>+6</strong>).</li>
+      <li><strong>Риск срыва SLA и задержка</strong>: до <strong>+26 баллов</strong> пропорционально текущему простою и опозданию рейса.</li>
+      <li><strong>Ценность и масса груза</strong>: до <strong>+16 баллов</strong> на основе выручки (<code>revenue</code>) и веса (<code>weight_lbs</code>).</li>
+      <li>Категории приоритета: <span class="badge badge-red">CRITICAL (≥75)</span> <span class="badge badge-purple">HIGH (≥55)</span> <span class="badge badge-blue">MEDIUM (≥38)</span> <span class="badge badge-green">LOW (&lt;38)</span>.</li>
+    </ul>
+  </div>
+
+  <div class="info-card">
+    <h3>Шаг 2: Поволновая диспетчеризация и балансировка хабов (<code>optimize_facility_queue</code>)</h3>
+    <ul>
+      <li><strong>Стресс-тест (<code>surge_extra_trucks</code>)</strong>: при активации инжектирует дополнительные внеплановые фуры в утренние пики (<code>08:00–09:00</code>) и вечерние часы закрытия (<code>16:00–19:00</code>).</li>
+      <li><strong>Операционные волны</strong>: внутри каждого дня прибытия делятся на 3-часовые волны (<code>wave_id = hour // 3</code>) и сортируются по убыванию <code>priority_score</code>.</li>
+      <li><strong>Контроль занятости бригад (<code>bay_free_times</code>)</strong>: отслеживает момент освобождения каждого активного дока с учетом 5-минутного технологического окна между фурами.</li>
+      <li><strong>Правила маршрутизации каждой фуры</strong>:
+        <ol>
+          <li><em>Прибытие в закрытые часы + доступен открытый хаб в том же городе</em> (при <code>priority_score ≥ 52</code> или <code>orig_det ≥ 70</code>) → <strong><code>CITY_HUB_REROUTE</code></strong> (перенаправление в соседний открытый хаб с 15-минутным трансфером).</li>
+          <li><em>Прибытие в закрытые часы без рероутинга</em> → <strong><code>SHIFTED_TO_OPEN_HOURS</code></strong> (перенос слота на первый доступный док в момент открытия склада).</li>
+          <li><em>Прибытие в рабочие часы</em> → назначение на самый ранний свободный док (<code>np.argmin(bay_free_times)</code>). Рейсы <code>CRITICAL</code> и <code>HIGH</code> получают статус <strong><code>PRIORITY_FAST_TRACK</code></strong>, остальные — сглаживание пика (<strong><code>SLOT_SMOOTHED</code></strong> / <strong><code>SLOT_OPTIMIZED</code></strong>).</li>
+        </ol>
+      </li>
+      <li><strong>Расчет ROI и экологии</strong>: сэкономленные минуты переводятся в финансовую экономию (<code>$1.25/мин</code> = <code>$75/ч</code>), топливо на холостом ходу (<code>0.85 гал/ч</code>) и снижение выбросов <code>CO₂</code> (<code>10.18 кг/гал</code>).</li>
+    </ul>
+  </div>
+
+  <h2>5. Гибридный AI-Агент (<code>backend/ai_agent.py</code>) и Фронтенд (<code>frontend/app.js</code>)</h2>
+  <div class="grid-2">
+    <div class="info-card">
+      <h3>Гибридный AI-Диспетчер (<code>HybridLogisticsAgent</code>)</h3>
+      <ul>
+        <li><strong>Парсинг локаций (<code>_detect_facility_from_text</code>)</strong>: распознает в запросе код <code>FAC000XX</code> или название города на русском/английском (например, «Атланта» → <code>FAC00012</code>, «Филадельфия» → <code>FAC00008</code>).</li>
+        <li><strong>Вызов инструментов (Tool Execution)</strong>: при каждом сообщении выполняет 3 реальных инструмента: <code>optimize_facility_queue</code>, <code>scan_network_bottlenecks</code> и <code>predict_detention_and_best_slot</code>.</li>
+        <li><strong>Автономный и LLM режимы</strong>: по умолчанию формирует аналитический ответ встроенным детерминированным ядром (<code>_build_analytical_response</code>). При подключении ключей <code>Gemini</code>, <code>OpenAI</code> или локальной <code>Ollama</code> передает JSON-телеметрию в LLM с автоматическим фоллбэком при сбое сети.</li>
+      </ul>
+    </div>
+    <div class="info-card emerald">
+      <h3>Клиентский скрипт (<code>frontend/app.js</code>)</h3>
+      <ul>
+        <li>При инициализации страницы (<code>DOMContentLoaded</code>) последовательно вызывает <code>loadOverview()</code>, <code>runOptimization()</code> и <code>runMLPrediction()</code>.</li>
+        <li>Строит интерактивный двухслойный график <code>Chart.js</code> (сравнение среднего простоя по часам До и После AI-оптимизации).</li>
+        <li>Управляет фильтрацией таблицы расписания доков по типам принятых решений (Все рейсы, Fast-Track, Рероутинг в хабы, Перенос слотов) и отображает в чате плашки вызванных агентом инструментов.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>AI-Агент управления очередями и доками в логистике • Техническое описание скриптов</span>
+    <span>Страница 2 из 2</span>
+  </div>
+
+</body>
+</html>

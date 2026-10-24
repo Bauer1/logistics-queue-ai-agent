@@ -1,7 +1,14 @@
+import sys
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingRegressor
 from typing import Dict, Any, List
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from backend.data_loader import LogisticsDataStore, parse_operating_hours
 
 
@@ -98,16 +105,16 @@ class DetentionMLPredictor:
 
         # Target combines historical detention + operational bottleneck penalty when out of hours or heavy cargo
         # This ensures the ML model learns both historical detention patterns and physical dock constraints
-        raw_y = df["detention_minutes"].fillna(60.0).values
+        raw_y = df["detention_minutes"].fillna(60.0).to_numpy(dtype=float)
         operational_penalty = (
-            df["is_out_of_hours"].values * 65.0
-            + (df["weight_lbs"].fillna(25000).values / 45000.0) * 18.0
-            + (df["pieces"].fillna(12).values / 30.0) * 12.0
-            + np.clip(df["arrival_delay_min"].fillna(0).values, 0, 180) * 0.15
+            df["is_out_of_hours"].to_numpy(dtype=float) * 65.0
+            + (df["weight_lbs"].fillna(25000).to_numpy(dtype=float) / 45000.0) * 18.0
+            + (df["pieces"].fillna(12).to_numpy(dtype=float) / 30.0) * 12.0
+            + np.clip(df["arrival_delay_min"].fillna(0).to_numpy(dtype=float), 0, 180) * 0.15
         )
         y = np.clip(0.65 * raw_y + 0.35 * operational_penalty, 5.0, 300.0)
 
-        X = df[self.feature_names].fillna(0).values
+        X = df[self.feature_names].fillna(0).to_numpy(dtype=float)
         self.model.fit(X, y)
         preds = self.model.predict(X)
         mae = float(np.mean(np.abs(preds - y)))

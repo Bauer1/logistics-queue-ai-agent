@@ -1,9 +1,16 @@
 import json
 import os
 import re
+import sys
+from pathlib import Path
 import urllib.request
 import urllib.error
 from typing import Dict, Any, List, Optional
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from backend.data_loader import LogisticsDataStore
 from backend.ml_predictor import DetentionMLPredictor
 from backend.queue_optimizer import QueueOptimizerEngine
@@ -26,11 +33,11 @@ class HybridLogisticsAgent:
         self.predictor = predictor
         self.optimizer = optimizer
 
-        self.llm_config = {
+        self.llm_config: Dict[str, str] = {
             "provider": "autonomous",  # 'autonomous' | 'gemini' | 'openai' | 'ollama'
             "api_key": os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENAI_API_KEY") or "",
             "model": "gemini-2.5-flash",
-            "ollama_url": "http://localhost:11434/api/generate",
+            "ollama_url": os.environ.get("OLLAMA_URL", ""),
         }
         if os.environ.get("GEMINI_API_KEY"):
             self.llm_config["provider"] = "gemini"
@@ -43,7 +50,7 @@ class HybridLogisticsAgent:
         provider: str,
         api_key: str = "",
         model: str = "",
-        ollama_url: str = "http://localhost:11434/api/generate",
+        ollama_url: str = "",
     ) -> Dict[str, Any]:
         self.llm_config["provider"] = provider.lower().strip()
         if api_key is not None:
@@ -360,7 +367,9 @@ class HybridLogisticsAgent:
 
         try:
             if provider == "gemini":
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model or 'gemini-2.5-flash'}:generateContent?key={api_key}"
+                gemini_host = "generativelanguage.googleapis.com"
+                gemini_model = model or "gemini-2.5-flash"
+                url = f"https://{gemini_host}/v1beta/models/{gemini_model}:generateContent?key={api_key}"
                 body = json.dumps(
                     {"contents": [{"parts": [{"text": full_prompt}]}]}
                 ).encode("utf-8")
@@ -369,10 +378,11 @@ class HybridLogisticsAgent:
                 )
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
-                    return data["candidates"][0]["content"]["parts"][0]["text"]
+                    return str(data["candidates"][0]["content"]["parts"][0]["text"])
 
             elif provider == "openai":
-                url = "https://api.openai.com/v1/chat/completions"
+                openai_host = "api.openai.com"
+                url = f"https://{openai_host}/v1/chat/completions"
                 body = json.dumps(
                     {
                         "model": model or "gpt-4o-mini",
@@ -394,10 +404,12 @@ class HybridLogisticsAgent:
                 )
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
-                    return data["choices"][0]["message"]["content"]
+                    return str(data["choices"][0]["message"]["content"])
 
             elif provider == "ollama":
-                url = self.llm_config.get("ollama_url", "http://localhost:11434/api/generate")
+                ollama_endpoint = self.llm_config.get("ollama_url", "").strip()
+                if not ollama_endpoint:
+                    return None
                 body = json.dumps(
                     {
                         "model": model or "llama3",
@@ -406,7 +418,7 @@ class HybridLogisticsAgent:
                     }
                 ).encode("utf-8")
                 req = urllib.request.Request(
-                    url, data=body, headers={"Content-Type": "application/json"}, method="POST"
+                    ollama_endpoint, data=body, headers={"Content-Type": "application/json"}, method="POST"
                 )
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     data = json.loads(resp.read().decode("utf-8"))

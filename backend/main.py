@@ -1,4 +1,7 @@
+from contextlib import asynccontextmanager
 import os
+import sys
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -6,15 +9,34 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
 
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from backend.data_loader import LogisticsDataStore, DEFAULT_DATASET_PATH
 from backend.ml_predictor import DetentionMLPredictor
 from backend.queue_optimizer import QueueOptimizerEngine
 from backend.ai_agent import HybridLogisticsAgent
 
+# Initialize Data Store, ML Predictor, Queue Optimizer, and Hybrid Agent
+store = LogisticsDataStore(dataset_path=DEFAULT_DATASET_PATH)
+predictor = DetentionMLPredictor(store=store)
+optimizer = QueueOptimizerEngine(store=store, predictor=predictor)
+agent = HybridLogisticsAgent(store=store, predictor=predictor, optimizer=optimizer)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    store.load_all()
+    predictor.train(sample_size=45000)
+    yield
+
+
 app = FastAPI(
     title="Logistics Queue & Dock AI-Agent Control Tower",
     description="AI-агент регулирования очередей, оптимизации расписания доков (Time-Slot Management) и прогнозирования простоев в логистической цепочке.",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -24,18 +46,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize Data Store, ML Predictor, Queue Optimizer, and Hybrid Agent
-store = LogisticsDataStore(dataset_path=DEFAULT_DATASET_PATH)
-predictor = DetentionMLPredictor(store=store)
-optimizer = QueueOptimizerEngine(store=store, predictor=predictor)
-agent = HybridLogisticsAgent(store=store, predictor=predictor, optimizer=optimizer)
-
-
-@app.on_event("startup")
-def startup_event():
-    store.load_all()
-    predictor.train(sample_size=45000)
 
 
 class OptimizeRequest(BaseModel):
@@ -68,7 +78,7 @@ class AgentConfigRequest(BaseModel):
     provider: str = "autonomous"
     api_key: Optional[str] = ""
     model: Optional[str] = "gemini-2.5-flash"
-    ollama_url: Optional[str] = "http://localhost:11434/api/generate"
+    ollama_url: Optional[str] = ""
 
 
 @app.get("/api/overview")
@@ -146,7 +156,7 @@ def update_agent_config(req: AgentConfigRequest):
         provider=req.provider,
         api_key=req.api_key or "",
         model=req.model or "",
-        ollama_url=req.ollama_url or "http://localhost:11434/api/generate",
+        ollama_url=req.ollama_url or "",
     )
 
 
@@ -176,4 +186,11 @@ def download_pdf_guide():
             filename="Руководство_AI_Агент_Логистика.pdf",
         )
     raise HTTPException(status_code=404, detail="PDF file not found")
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=False)
+
 

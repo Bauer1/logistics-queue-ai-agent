@@ -1,7 +1,13 @@
+import sys
+from pathlib import Path
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from backend.data_loader import LogisticsDataStore, parse_operating_hours
 from backend.ml_predictor import DetentionMLPredictor
 
@@ -109,7 +115,9 @@ class QueueOptimizerEngine:
         ]
         extended_hubs = open_24_7_hubs if open_24_7_hubs else (wider_hours_hubs if wider_hours_hubs else city_hubs)
 
-        records: List[Dict[str, Any]] = df.to_dict(orient="records")
+        records: List[Dict[str, Any]] = [
+            {str(k): v for k, v in row.items()} for row in df.to_dict(orient="records")
+        ]
 
         # If surge simulation requested, inject realistic unplanned trucks during peak / after-hours
         if surge_extra_trucks > 0 and len(records) > 0:
@@ -176,9 +184,6 @@ class QueueOptimizerEngine:
         # Group events by date of actual arrival so dock bay scheduling is realistic per operational day
         records.sort(key=lambda x: x["act_dt_obj"])
 
-        # Track when each active bay becomes free: list of datetime objects
-        bay_free_times: List[Optional[pd.Timestamp]] = [None] * active_bays
-
         optimized_queue: List[Dict[str, Any]] = []
         # Process day-by-day clusters, prioritizing high-priority trucks when multiple trucks compete
         # We sort within sliding windows by (-priority_score, act_dt_obj)
@@ -195,17 +200,17 @@ class QueueOptimizerEngine:
         out_of_hours_before = 0
         reefer_protected_count = 0
 
-        hourly_before = {h: 0 for h in range(24)}
-        hourly_after = {h: 0 for h in range(24)}
-        hourly_detention_before = {h: [] for h in range(24)}
-        hourly_detention_after = {h: [] for h in range(24)}
+        hourly_before: Dict[int, int] = {h: 0 for h in range(24)}
+        hourly_after: Dict[int, int] = {h: 0 for h in range(24)}
+        hourly_detention_before: Dict[int, List[int]] = {h: [] for h in range(24)}
+        hourly_detention_after: Dict[int, List[int]] = {h: [] for h in range(24)}
 
         for day_str, day_events in by_day.items():
             # Reset bays at start of day
             day_base = pd.to_datetime(day_str)
             day_open_dt = day_base + pd.Timedelta(hours=open_h)
             day_close_dt = day_base + pd.Timedelta(hours=close_h)
-            bay_free_times = [day_open_dt for _ in range(active_bays)]
+            bay_free_times: List[pd.Timestamp] = [day_open_dt for _ in range(active_bays)]
 
             # Sort events: group into 3-hour operational waves, within each wave sort by priority descending
             for ev in day_events:
@@ -253,7 +258,7 @@ class QueueOptimizerEngine:
                             # Shift to either last open slot before closing or next morning open slot
                             target_start = day_open_dt + pd.Timedelta(minutes=30)
                         # Find earliest available bay in open window
-                        bay_idx = int(np.argmin(bay_free_times))
+                        bay_idx = min(range(len(bay_free_times)), key=lambda i: bay_free_times[i])
                         earliest_bay_dt = max(target_start, bay_free_times[bay_idx])
                         if not is_24_7 and earliest_bay_dt >= day_close_dt:
                             earliest_bay_dt = day_open_dt + pd.Timedelta(hours=1)
@@ -267,7 +272,7 @@ class QueueOptimizerEngine:
                         slot_shifted_count += 1
                 else:
                     # Inside operating hours: allocate optimal dock bay with Priority Fast-Track
-                    bay_idx = int(np.argmin(bay_free_times))
+                    bay_idx = min(range(len(bay_free_times)), key=lambda i: bay_free_times[i])
                     bay_ready_dt = bay_free_times[bay_idx]
                     effective_arrival = max(act_dt, day_open_dt)
                     if effective_arrival >= bay_ready_dt:
